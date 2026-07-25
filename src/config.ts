@@ -269,8 +269,6 @@ export const footerConfig: FooterConfig = {
   ],
   copyright: "© 2026 奥林匹斯·神话志 — 献给所有仰望星空的人 · 由 Kimi Agent 生成",
   bottomLinks: [
-    { label: "回到顶部", href: "#hero" },
-    { label: "诸神星图", href: "#pantheon" },
-    { label: "GitHub", href: "https://github.com/MinibeanAI/greek-mythology-olympus" },
+    { label: "GitHub 源码", href: "https://github.com/MinibeanAI/greek-mythology-olympus" },
   ],
 };

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { useIsMobile } from '../hooks/use-mobile';
 
@@ -508,7 +508,107 @@ export default function PantheonGraph() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+  const svgContainerRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+
+  // ── 拖拽与缩放 ──
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
+  const [zoom, setZoom] = useState(1);
+  const [isDragging, setIsDragging] = useState(false);
+  const wasDraggingRef = useRef(false);
+  const dragStart = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
+
+  const viewBox = useMemo(() => {
+    const w = 1000 / zoom;
+    const h = 680 / zoom;
+    return `${-panX} ${-panY} ${w} ${h}`;
+  }, [panX, panY, zoom]);
+
+  const onDragStart = useCallback((clientX: number, clientY: number) => {
+    setIsDragging(true);
+    dragStart.current = { x: clientX, y: clientY, panX, panY };
+  }, [panX, panY]);
+
+  const onDragMove = useCallback((clientX: number, clientY: number) => {
+    if (!dragStart.current || !svgContainerRef.current) return;
+    const svg = svgContainerRef.current.querySelector('svg');
+    if (!svg) return;
+    const rect = svg.getBoundingClientRect();
+    const vbW = 1000 / zoom;
+    const vbH = 680 / zoom;
+    const scaleX = vbW / rect.width;
+    const scaleY = vbH / rect.height;
+    const dx = (clientX - dragStart.current.x) * scaleX;
+    const dy = (clientY - dragStart.current.y) * scaleY;
+    setPanX(dragStart.current.panX - dx);
+    setPanY(dragStart.current.panY - dy);
+  }, [zoom]);
+
+  const onDragEnd = useCallback(() => {
+    if (isDragging) wasDraggingRef.current = true;
+    setIsDragging(false);
+    dragStart.current = null;
+  }, [isDragging]);
+
+  // 鼠标拖拽
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    // 只对中键或按住空格时左键拖拽生效，或者直接用左键拖拽
+    if (e.button === 0 || e.button === 1) {
+      e.preventDefault();
+      onDragStart(e.clientX, e.clientY);
+    }
+  }, [onDragStart]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    onDragMove(e.clientX, e.clientY);
+  }, [onDragMove]);
+
+  const handleMouseUp = useCallback(() => {
+    onDragEnd();
+  }, [onDragEnd]);
+
+  // 触摸拖拽（移动端）
+  const touchIdRef = useRef<number | null>(null);
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      const t = e.touches[0];
+      touchIdRef.current = t.identifier;
+      onDragStart(t.clientX, t.clientY);
+    }
+  }, [onDragStart]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!touchIdRef.current) return;
+    const t = Array.from(e.changedTouches).find(tt => tt.identifier === touchIdRef.current);
+    if (t) onDragMove(t.clientX, t.clientY);
+  }, [onDragMove]);
+
+  const handleTouchEnd = useCallback(() => {
+    touchIdRef.current = null;
+    onDragEnd();
+  }, [onDragEnd]);
+
+  // 缩放（滚轮）
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    const newZoom = Math.min(3, Math.max(0.5, zoom * delta));
+    // 以鼠标位置为中心缩放
+    if (svgContainerRef.current) {
+      const svg = svgContainerRef.current.querySelector('svg');
+      if (svg) {
+        const rect = svg.getBoundingClientRect();
+        const vbW = 1000 / zoom;
+        const scaleX = vbW / rect.width;
+        const mouseX = (e.clientX - rect.left) * scaleX + (-panX);
+        const ratio = newZoom / zoom;
+        setPanX(panX + mouseX * (1 - ratio));
+        setPanY(panY + ((e.clientY - rect.top) * (680 / zoom / rect.height) + (-panY)) * (1 - ratio));
+      }
+    }
+    setZoom(newZoom);
+  }, [zoom, panX, panY]);
 
   // 监听其他板块（如十二主神卡片）的联动选神事件
   useEffect(() => {
@@ -653,33 +753,42 @@ export default function PantheonGraph() {
 
         <div
           data-reveal
+          ref={svgContainerRef}
           style={{
             position: 'relative', border: '1px solid rgba(150, 140, 230, 0.14)', borderRadius: 12,
             background: 'radial-gradient(ellipse at 50% 30%, rgba(30, 24, 62, 0.5), rgba(6, 6, 18, 0.92) 70%)',
-            overflow: isMobile ? 'auto hidden' : 'hidden',
-            WebkitOverflowScrolling: 'touch',
+            overflow: 'hidden',
+            cursor: isDragging ? 'grabbing' : 'grab',
+            userSelect: 'none',
           }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onWheel={handleWheel}
+          onTouchStart={isMobile ? handleTouchStart : undefined}
+          onTouchMove={isMobile ? handleTouchMove : undefined}
+          onTouchEnd={isMobile ? handleTouchEnd : undefined}
         >
-          {isMobile && (
-            <div
-              style={{
-                position: 'sticky', left: 0, top: 0, zIndex: 3, width: 'fit-content',
-                margin: '10px 0 0 14px', padding: '4px 12px', borderRadius: 999,
-                background: 'rgba(120, 110, 220, 0.16)', backdropFilter: 'blur(6px)',
-                fontFamily: "'Inter', sans-serif", fontSize: 11, color: 'rgba(200,190,255,0.9)',
-                pointerEvents: 'none',
-              }}
-            >
-              ⟵ 左右滑动探索星图 ⟶
-            </div>
-          )}
+          {/* 操作提示 */}
+          <div
+            style={{
+              position: 'absolute', top: 12, right: 16, zIndex: 3,
+              fontFamily: "'Inter', sans-serif", fontSize: 11, color: 'rgba(200,190,255,0.7)',
+              display: 'flex', alignItems: 'center', gap: 6,
+              pointerEvents: 'none',
+            }}
+          >
+            {isMobile ? '⟵ 拖动探索 ⟶' : '拖动平移 · 滚轮缩放'}
+          </div>
           <svg
-            viewBox="0 0 1000 680"
+            viewBox={viewBox}
             style={{
               display: 'block', height: 'auto',
-              width: isMobile ? '880px' : '100%',
-              minWidth: isMobile ? '880px' : undefined,
+              width: '100%',
+              minWidth: undefined,
               maxWidth: 'none',
+              pointerEvents: isDragging ? 'none' : 'auto',
             }}
             role="img"
             aria-label="希腊诸神关系星图"
@@ -754,7 +863,10 @@ export default function PantheonGraph() {
                   transform={`translate(${p.pos.x}, ${p.pos.y})`}
                   opacity={state === 'dim' ? 0.15 : 1}
                   style={{ cursor: 'pointer', transition: 'opacity 0.35s ease' }}
-                  onClick={(e) => { e.stopPropagation(); openStory(p.story.id); }}
+                  onClick={(e) => {
+                    if (wasDraggingRef.current) { wasDraggingRef.current = false; e.stopPropagation(); return; }
+                    e.stopPropagation(); openStory(p.story.id);
+                  }}
                   onMouseEnter={() => setHoveredStoryId(p.story.id)}
                   onMouseLeave={() => setHoveredStoryId(null)}
                 >
@@ -790,7 +902,10 @@ export default function PantheonGraph() {
                   transform={`translate(${g.x}, ${g.y})`}
                   opacity={nodeOpacity(g.id)}
                   style={{ cursor: 'pointer', transition: 'opacity 0.35s ease' }}
-                  onClick={() => setSelected(selected === g.id ? null : g.id)}
+                  onClick={() => {
+                    if (wasDraggingRef.current) { wasDraggingRef.current = false; return; }
+                    setSelected(selected === g.id ? null : g.id);
+                  }}
                   onMouseEnter={() => setHovered(g.id)}
                   onMouseLeave={() => setHovered(null)}
                 >
@@ -849,10 +964,8 @@ export default function PantheonGraph() {
           <div
             className="flex flex-wrap items-center"
             style={{
-              position: isMobile ? 'sticky' : 'absolute',
+              position: 'absolute',
               left: 18, bottom: 14, gap: 22, width: 'fit-content',
-              marginTop: isMobile ? -44 : undefined,
-              paddingBottom: isMobile ? 14 : undefined,
               fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#c8c8e0', opacity: 0.85,
             }}
           >
