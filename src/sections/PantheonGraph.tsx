@@ -545,6 +545,12 @@ export default function PantheonGraph() {
       if (e.from === active) set.add(e.to);
       if (e.to === active) set.add(e.from);
     }
+    // 同故事出场的神也应点亮（命运之线连接的神可能没有直接 edge）
+    for (const s of STORIES) {
+      if (s.gods.includes(active)) {
+        for (const g of s.gods) set.add(g);
+      }
+    }
     return set;
   }, [active]);
 
