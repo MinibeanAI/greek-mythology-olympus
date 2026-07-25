@@ -259,11 +259,9 @@ export const footerConfig: FooterConfig = {
       ],
     },
     {
-      title: "源码与链接",
+      title: "源码",
       links: [
-        { label: "GitHub 源码", href: "https://github.com/MinibeanAI/greek-mythology-olympus" },
-        { label: "Cloudflare Pages", href: "https://greek-mythology-olympus.pages.dev" },
-        { label: "自定义域名", href: "https://myth.minibean.cn" },
+        { label: "GitHub", href: "https://github.com/MinibeanAI/greek-mythology-olympus" },
       ],
     },
   ],
