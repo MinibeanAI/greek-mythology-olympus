@@ -589,25 +589,37 @@ export default function PantheonGraph() {
     onDragEnd();
   }, [onDragEnd]);
 
-  // 缩放（滚轮）
+  // 缩放 & 触控板平移（wheel 事件）
+  // Mac 触控板：两指拖动 → wheel 无 ctrlKey → 平移；捏合缩放 → wheel 有 ctrlKey → 缩放
+  // 鼠标：滚轮 → 缩放
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    const newZoom = Math.min(3, Math.max(0.5, zoom * delta));
-    // 以鼠标位置为中心缩放
-    if (svgContainerRef.current) {
-      const svg = svgContainerRef.current.querySelector('svg');
-      if (svg) {
-        const rect = svg.getBoundingClientRect();
-        const vbW = 1000 / zoom;
-        const scaleX = vbW / rect.width;
-        const mouseX = (e.clientX - rect.left) * scaleX + (-panX);
-        const ratio = newZoom / zoom;
-        setPanX(panX + mouseX * (1 - ratio));
-        setPanY(panY + ((e.clientY - rect.top) * (680 / zoom / rect.height) + (-panY)) * (1 - ratio));
-      }
+
+    if (!svgContainerRef.current) return;
+    const svg = svgContainerRef.current.querySelector('svg');
+    if (!svg) return;
+
+    const rect = svg.getBoundingClientRect();
+    const vbW = 1000 / zoom;
+    const vbH = 680 / zoom;
+    const scaleX = vbW / rect.width;
+    const scaleY = vbH / rect.height;
+
+    if (e.ctrlKey || e.metaKey) {
+      // 触控板捏合缩放（Mac）或 Ctrl+滚轮缩放
+      const factor = 1 - e.deltaY * 0.005; // deltaY 在捏合时是浮点数，幅度较小
+      const newZoom = Math.min(3, Math.max(0.5, zoom * factor));
+      const mouseX = (e.clientX - rect.left) * scaleX + (-panX);
+      const mouseY = (e.clientY - rect.top) * scaleY + (-panY);
+      const ratio = newZoom / zoom;
+      setPanX(panX + mouseX * (1 - ratio));
+      setPanY(panY + mouseY * (1 - ratio));
+      setZoom(newZoom);
+    } else {
+      // 触控板两指拖动平移，或鼠标滚轮平移
+      setPanX(panX + e.deltaX * scaleX);
+      setPanY(panY + e.deltaY * scaleY);
     }
-    setZoom(newZoom);
   }, [zoom, panX, panY]);
 
   // 监听其他板块（如十二主神卡片）的联动选神事件
@@ -779,7 +791,7 @@ export default function PantheonGraph() {
               pointerEvents: 'none',
             }}
           >
-            {isMobile ? '⟵ 拖动探索 ⟶' : '拖动平移 · 滚轮缩放'}
+            {isMobile ? '⟵ 拖动探索 ⟶' : '拖动/触控板平移 · 滚轮/捏合缩放'}
           </div>
           <svg
             viewBox={viewBox}
