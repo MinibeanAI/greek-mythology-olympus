@@ -91,6 +91,7 @@ export default function CinematicVision() {
               <video
                 ref={videoRef}
                 src={architectureConfig.videoPath}
+                poster="/images/olympus-wide.jpg"
                 autoPlay
                 muted
                 loop

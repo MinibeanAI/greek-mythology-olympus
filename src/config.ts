@@ -231,7 +231,7 @@ export const researchConfig: ResearchConfig = {
 
 export interface FooterLinkColumn {
   title: string;
-  links: string[];
+  links: { label: string; href: string }[];
 }
 
 export interface FooterBottomLink {
@@ -248,10 +248,29 @@ export interface FooterConfig {
 
 export const footerConfig: FooterConfig = {
   heading: "神话永不落幕",
-  columns: [],
-  copyright: "© 2026 奥林匹斯·神话志 — 献给所有仰望星空的人",
+  columns: [
+    {
+      title: "项目",
+      links: [
+        { label: "诸神星图", href: "#pantheon" },
+        { label: "神话篇章", href: "#curriculum" },
+        { label: "主神档案", href: "#alumni" },
+        { label: "神谕影像", href: "#cinematic" },
+      ],
+    },
+    {
+      title: "源码与链接",
+      links: [
+        { label: "GitHub 源码", href: "https://github.com/MinibeanAI/greek-mythology-olympus" },
+        { label: "Cloudflare Pages", href: "https://greek-mythology-olympus.pages.dev" },
+        { label: "自定义域名", href: "https://myth.minibean.cn" },
+      ],
+    },
+  ],
+  copyright: "© 2026 奥林匹斯·神话志 — 献给所有仰望星空的人 · 由 Kimi Agent 生成",
   bottomLinks: [
     { label: "回到顶部", href: "#hero" },
     { label: "诸神星图", href: "#pantheon" },
+    { label: "GitHub", href: "https://github.com/MinibeanAI/greek-mythology-olympus" },
   ],
 };

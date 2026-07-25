@@ -5,6 +5,16 @@ export default function Footer() {
     return null;
   }
 
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith('#')) {
+      e.preventDefault();
+      const el = document.querySelector(href);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
   return (
     <footer
       id="footer"
@@ -35,8 +45,8 @@ export default function Footer() {
 
         {footerConfig.columns.length > 0 && (
           <div
-            className="grid grid-cols-1 md:grid-cols-2"
-            style={{ gap: 60, marginBottom: 120 }}
+            className="grid grid-cols-2 md:grid-cols-4"
+            style={{ gap: 40, marginBottom: 120 }}
           >
             {footerConfig.columns.map((column, colIndex) => (
               <div key={colIndex} className="flex flex-col" style={{ gap: 16 }}>
@@ -49,7 +59,7 @@ export default function Footer() {
                       letterSpacing: '3px',
                       textTransform: 'uppercase',
                       color: '#dadada',
-                      opacity: 0.4,
+                      opacity: 0.5,
                       marginBottom: 8,
                     }}
                   >
@@ -58,12 +68,13 @@ export default function Footer() {
                 )}
                 {column.links.map((link) => (
                   <a
-                    key={link}
-                    href="#"
+                    key={link.label}
+                    href={link.href}
+                    onClick={(e) => handleClick(e, link.href)}
                     className="nav-link"
                     style={{ width: 'fit-content' }}
                   >
-                    {link}
+                    {link.label}
                   </a>
                 ))}
               </div>
@@ -97,7 +108,8 @@ export default function Footer() {
               {footerConfig.bottomLinks.map((bottomLink) => (
                 <a
                   key={bottomLink.label}
-                  href={bottomLink.href || '#'}
+                  href={bottomLink.href}
+                  onClick={(e) => handleClick(e, bottomLink.href)}
                   style={{
                     fontFamily: "'Inter', sans-serif",
                     fontWeight: 200,

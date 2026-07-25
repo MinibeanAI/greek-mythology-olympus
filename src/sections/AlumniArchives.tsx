@@ -116,8 +116,8 @@ export default function AlumniArchives() {
                     alt={project.title}
                     className="w-full h-full object-cover transition-all duration-700"
                     style={{
-                      opacity: 0.5,
-                      filter: 'grayscale(100%)',
+                      opacity: 0.7,
+                      filter: 'grayscale(60%)',
                     }}
                     onMouseEnter={(e) => {
                       (e.target as HTMLImageElement).style.opacity = '1';
@@ -125,8 +125,8 @@ export default function AlumniArchives() {
                       (e.target as HTMLImageElement).style.transform = 'scale(1.04)';
                     }}
                     onMouseLeave={(e) => {
-                      (e.target as HTMLImageElement).style.opacity = '0.5';
-                      (e.target as HTMLImageElement).style.filter = 'grayscale(100%)';
+                      (e.target as HTMLImageElement).style.opacity = '0.7';
+                      (e.target as HTMLImageElement).style.filter = 'grayscale(60%)';
                       (e.target as HTMLImageElement).style.transform = 'scale(1)';
                     }}
                     loading="lazy"
