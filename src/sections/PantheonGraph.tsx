@@ -518,6 +518,8 @@ export default function PantheonGraph() {
   const [isDragging, setIsDragging] = useState(false);
   const wasDraggingRef = useRef(false);
   const dragStart = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
+  const hasMovedRef = useRef(false); // 是否真正移动了（超过阈值才算拖拽）
+  const DRAG_THRESHOLD = 5; // 屏幕像素阈值
 
   const viewBox = useMemo(() => {
     const w = 1000 / zoom;
@@ -526,12 +528,21 @@ export default function PantheonGraph() {
   }, [panX, panY, zoom]);
 
   const onDragStart = useCallback((clientX: number, clientY: number) => {
-    setIsDragging(true);
     dragStart.current = { x: clientX, y: clientY, panX, panY };
+    hasMovedRef.current = false;
   }, [panX, panY]);
 
   const onDragMove = useCallback((clientX: number, clientY: number) => {
     if (!dragStart.current || !svgContainerRef.current) return;
+    // 判断是否超过移动阈值
+    const screenDx = clientX - dragStart.current.x;
+    const screenDy = clientY - dragStart.current.y;
+    if (!hasMovedRef.current && Math.abs(screenDx) < DRAG_THRESHOLD && Math.abs(screenDy) < DRAG_THRESHOLD) {
+      return; // 移动距离不够，不算拖拽
+    }
+    hasMovedRef.current = true;
+    if (!isDragging) setIsDragging(true);
+
     const svg = svgContainerRef.current.querySelector('svg');
     if (!svg) return;
     const rect = svg.getBoundingClientRect();
@@ -543,19 +554,22 @@ export default function PantheonGraph() {
     const dy = (clientY - dragStart.current.y) * scaleY;
     setPanX(dragStart.current.panX - dx);
     setPanY(dragStart.current.panY - dy);
-  }, [zoom]);
+  }, [zoom, isDragging]);
 
   const onDragEnd = useCallback(() => {
-    if (isDragging) wasDraggingRef.current = true;
+    if (hasMovedRef.current) wasDraggingRef.current = true;
     setIsDragging(false);
     dragStart.current = null;
-  }, [isDragging]);
+    // 短暂延迟后重置 wasDragging，让 click 事件来得及判断
+    if (hasMovedRef.current) {
+      setTimeout(() => { wasDraggingRef.current = false; }, 50);
+    }
+  }, []);
 
   // 鼠标拖拽
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    // 只对中键或按住空格时左键拖拽生效，或者直接用左键拖拽
     if (e.button === 0 || e.button === 1) {
-      e.preventDefault();
+      // 不 preventDefault，让 click 事件正常生成
       onDragStart(e.clientX, e.clientY);
     }
   }, [onDragStart]);
