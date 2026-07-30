@@ -6,3 +6,6 @@ node_modules/
 .DS_Store
 *.log
 node_modules
+.claude/
+*.zip
+小红书规范校验报告.md

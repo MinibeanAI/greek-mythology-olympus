@@ -5,6 +5,8 @@ export default function Footer() {
     return null;
   }
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) {
       e.preventDefault();
@@ -19,7 +21,7 @@ export default function Footer() {
     <footer
       id="footer"
       style={{
-        padding: '150px 5vw 60px',
+        padding: 'clamp(60px, 12vw, 150px) 5vw clamp(24px, 5vw, 60px)',
         background: 'transparent',
         position: 'relative',
         zIndex: 2,
@@ -30,13 +32,13 @@ export default function Footer() {
         {footerConfig.heading && (
           <h2
             style={{
-              fontFamily: "'EB Garamond', serif",
+              fontFamily: "Georgia, 'Times New Roman', serif",
               fontWeight: 400,
-              fontSize: 'clamp(40px, 5vw, 80px)',
+              fontSize: isMobile ? 'clamp(22px, 5.5vw, 32px)' : 'clamp(40px, 5vw, 80px)',
               lineHeight: 1.1,
               letterSpacing: '-1.44px',
               color: '#ffffff',
-              marginBottom: 80,
+              marginBottom: isMobile ? '20px' : 'clamp(32px, 6vw, 80px)',
             }}
           >
             {footerConfig.heading}
@@ -46,14 +48,14 @@ export default function Footer() {
         {footerConfig.columns.length > 0 && (
           <div
             className="grid grid-cols-2 md:grid-cols-4"
-            style={{ gap: 40, marginBottom: 120 }}
+            style={{ gap: 40, marginBottom: 'clamp(40px, 10vw, 120px)' }}
           >
             {footerConfig.columns.map((column, colIndex) => (
               <div key={colIndex} className="flex flex-col" style={{ gap: 16 }}>
                 {column.title && (
                   <span
                     style={{
-                      fontFamily: "'Inter', sans-serif",
+                      fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif",
                       fontSize: 12,
                       fontWeight: 300,
                       letterSpacing: '3px',
@@ -93,7 +95,7 @@ export default function Footer() {
           {footerConfig.copyright && (
             <span
               style={{
-                fontFamily: "'Inter', sans-serif",
+                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif",
                 fontWeight: 200,
                 fontSize: 12,
                 color: '#dadada',
@@ -111,7 +113,7 @@ export default function Footer() {
                   href={bottomLink.href}
                   onClick={(e) => handleClick(e, bottomLink.href)}
                   style={{
-                    fontFamily: "'Inter', sans-serif",
+                    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif",
                     fontWeight: 200,
                     fontSize: 12,
                     color: '#dadada',

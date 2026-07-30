@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { researchConfig } from '../config';
 import { SELECT_GOD_EVENT } from './PantheonGraph';
+import { useIsMobile } from '../hooks/use-mobile';
 
 function flyToGod(godId?: string) {
   if (!godId) return;
@@ -15,6 +16,7 @@ function flyToGod(godId?: string) {
 export default function AlumniArchives() {
   const gridRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const items = itemRefs.current.filter(Boolean) as HTMLDivElement[];
@@ -55,7 +57,7 @@ export default function AlumniArchives() {
     <section
       id="alumni"
       style={{
-        padding: '150px 5vw',
+        padding: 'clamp(60px, 12vw, 150px) 5vw',
         background: 'transparent',
         position: 'relative',
         zIndex: 2,
@@ -66,7 +68,7 @@ export default function AlumniArchives() {
           <div
             className="mb-6"
             style={{
-              fontFamily: "'Inter', sans-serif",
+              fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif",
               fontSize: 12,
               fontWeight: 300,
               letterSpacing: '3px',
@@ -90,7 +92,7 @@ export default function AlumniArchives() {
         <div
           ref={gridRef}
           className="grid grid-cols-2 md:grid-cols-4"
-          style={{ gap: 0 }}
+          style={{ gap: isMobile ? 10 : 0 }}
         >
           {researchConfig.projects.map((project, i) => (
             <div
@@ -102,13 +104,13 @@ export default function AlumniArchives() {
               aria-label={project.godId ? `在诸神星图中查看${project.title}` : undefined}
               style={{
                 borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRight: (i + 1) % 4 !== 0 ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
-                padding: '24px 20px',
+                borderRight: (i + 1) % (isMobile ? 2 : 4) !== 0 ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
+                padding: isMobile ? '12px 10px' : '24px 20px',
               }}
             >
               <div
-                className="relative overflow-hidden mb-4"
-                style={{ aspectRatio: '1/1' }}
+                className="relative overflow-hidden mb-3"
+                style={{ aspectRatio: '1/1', borderRadius: isMobile ? 6 : 0, overflow: 'hidden' }}
               >
                 {project.image && (
                   <img
@@ -135,37 +137,47 @@ export default function AlumniArchives() {
               </div>
               <h4
                 style={{
-                  fontFamily: "'EB Garamond', serif",
+                  fontFamily: "Georgia, 'Times New Roman', serif",
                   fontWeight: 400,
-                  fontSize: 18,
+                  fontSize: isMobile ? 13 : 18,
                   color: '#ffffff',
-                  margin: '0 0 6px 0',
-                  lineHeight: 1.3,
+                  margin: '0 0 3px 0',
+                  lineHeight: 1.25,
+                  // 防止长中文换行截断
+                  wordBreak: 'keep-all',
+                  overflowWrap: 'break-word',
                 }}
               >
                 {project.title}
               </h4>
               <div
                 className="flex items-center justify-between"
+                style={{ gap: 6 }}
               >
                 <span
                   style={{
-                    fontFamily: "'Inter', sans-serif",
+                    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif",
                     fontWeight: 200,
-                    fontSize: 12,
+                    fontSize: isMobile ? 10.5 : 12,
                     color: '#dadada',
                     opacity: 0.6,
+                    flex: '1 1 auto',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {project.discipline}
                 </span>
                 <span
                   style={{
-                    fontFamily: "'Fira Code', monospace",
+                    fontFamily: "'SF Mono', Menlo, Consolas, monospace",
                     fontWeight: 400,
-                    fontSize: 11,
+                    fontSize: isMobile ? 9 : 11,
                     color: '#dadada',
                     opacity: 0.4,
+                    flex: '0 0 auto',
+                    letterSpacing: 0.5,
                   }}
                 >
                   {project.year}
@@ -173,13 +185,14 @@ export default function AlumniArchives() {
               </div>
               {project.godId && (
                 <div
-                  className="opacity-0 group-hover:opacity-80 transition-opacity duration-500"
+                  className="md:opacity-0 md:group-hover:opacity-80 transition-opacity duration-500"
                   style={{
-                    fontFamily: "'Inter', sans-serif",
-                    fontSize: 11,
+                    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif",
+                    fontSize: isMobile ? 10 : 11,
                     color: 'rgba(160, 190, 255, 1)',
-                    marginTop: 6,
+                    marginTop: isMobile ? 4 : 6,
                     letterSpacing: '1px',
+                    opacity: isMobile ? 0.55 : 0.6,
                   }}
                 >
                   ✦ 点击前往星图

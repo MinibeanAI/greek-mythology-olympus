@@ -1,11 +1,13 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { architectureConfig } from '../config';
+import { useIsMobile } from '../hooks/use-mobile';
 
 export default function CinematicVision() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const textRef = useRef<HTMLHeadingElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -36,6 +38,24 @@ export default function CinematicVision() {
     return () => observer.disconnect();
   }, []);
 
+  // 移动端：进入视口才播放，移出暂停（节省流量 + 性能）
+  useEffect(() => {
+    if (!isMobile) return;
+    const video = videoRef.current;
+    if (!video) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) video.play().catch(() => {});
+          else video.pause();
+        });
+      },
+      { threshold: 0.3 }
+    );
+    io.observe(video);
+    return () => io.disconnect();
+  }, [isMobile]);
+
   if (!architectureConfig.sectionLabel && !architectureConfig.title) {
     return null;
   }
@@ -45,7 +65,7 @@ export default function CinematicVision() {
       id="cinematic"
       ref={sectionRef}
       style={{
-        padding: '150px 5vw 80px',
+        padding: 'clamp(60px, 12vw, 150px) 5vw clamp(30px, 6vw, 80px)',
         background: 'transparent',
         position: 'relative',
         zIndex: 2,
@@ -56,7 +76,7 @@ export default function CinematicVision() {
           <div
             className="mb-6"
             style={{
-              fontFamily: "'Inter', sans-serif",
+              fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif",
               fontSize: 12,
               fontWeight: 300,
               letterSpacing: '3px',
@@ -83,19 +103,21 @@ export default function CinematicVision() {
               className="relative overflow-hidden"
               style={{
                 width: '100%',
-                maxWidth: '80vw',
+                maxWidth: '100%',
                 margin: '0 auto',
-                aspectRatio: '21/9',
+                aspectRatio: isMobile ? '16 / 9' : '21 / 9',
+                borderRadius: isMobile ? 10 : 0,
               }}
             >
               <video
                 ref={videoRef}
                 src={architectureConfig.videoPath}
-                poster="/images/olympus-wide.jpg"
+                poster="./images/olympus-wide.jpg"
                 autoPlay
                 muted
                 loop
                 playsInline
+                preload="metadata"
                 className="w-full h-full object-cover"
                 style={{ display: 'block' }}
               />
@@ -105,19 +127,19 @@ export default function CinematicVision() {
           <div
             ref={textRef}
             className="flex flex-col md:flex-row md:items-center"
-            style={{ marginTop: 160, gap: '60px' }}
+            style={{ marginTop: isMobile ? '32px' : 'clamp(48px, 12vw, 160px)', gap: isMobile ? '16px' : 'clamp(24px, 5vw, 60px)' }}
           >
             {architectureConfig.title && (
               <h2
                 style={{
-                  fontFamily: "'EB Garamond', serif",
+                  fontFamily: "Georgia, 'Times New Roman', serif",
                   fontWeight: 400,
-                  fontSize: 'clamp(32px, 4vw, 64px)',
-                  lineHeight: 1.15,
-                  letterSpacing: '-1px',
-                  color: '#ffffff',
-                  margin: 0,
-                  flex: '0 0 50%',
+              fontSize: isMobile ? 'clamp(24px, 6vw, 36px)' : 'clamp(32px, 4vw, 64px)',
+              lineHeight: 1.15,
+              letterSpacing: '-0.5px',
+              color: '#ffffff',
+              margin: 0,
+              flex: '0 0 50%',
                   textWrap: 'balance',
                 }}
               >
@@ -127,10 +149,10 @@ export default function CinematicVision() {
             {architectureConfig.description && (
               <p
                 style={{
-                  fontFamily: "'Inter', sans-serif",
+                  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif",
                   fontWeight: 200,
-                  fontSize: 17,
-                  lineHeight: 1.85,
+                fontSize: isMobile ? 13 : 17,
+                lineHeight: isMobile ? 1.8 : 1.85,
                   color: '#dadada',
                   margin: 0,
                   flex: '1 1 50%',

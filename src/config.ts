@@ -79,28 +79,28 @@ export const capabilitiesConfig: CapabilitiesConfig = {
       slug: "genesis",
       description:
         "从混沌卡俄斯到大地盖亚，从乌拉诺斯的统治到克洛诺斯推翻父神，再到宙斯率领奥林匹斯诸神与泰坦展开十年鏖战——这是一部关于秩序如何从蛮荒中诞生的宇宙史诗。",
-      image: "/images/genesis.jpg",
+      image: "./images/genesis.jpg",
     },
     {
       title: "奥林匹斯十二主神",
       slug: "olympians",
       description:
         "云层之上的大理石宫殿里，十二位主神各掌一方权柄：雷霆、海洋、智慧、爱与美、火焰与信使。他们会嫉妒、会爱慕、会报复——希腊人的神，是放大了的人。",
-      image: "/images/olympians.jpg",
+      image: "./images/olympians.jpg",
     },
     {
       title: "英雄史诗",
       slug: "heroes",
       description:
         "赫拉克勒斯的十二项伟业、珀尔修斯斩杀美杜莎、忒修斯走出迷宫、奥德修斯十年漂泊——半神与凡人以血肉之躯对抗命运，书写下人类最早的英雄主义。",
-      image: "/images/heroes.jpg",
+      image: "./images/heroes.jpg",
     },
     {
       title: "冥界·命运与轮回",
       slug: "underworld",
       description:
         "斯提克斯河上卡戎摆渡亡魂，三位摩伊赖纺出每个人的生命线。在希腊人的想象里，死亡不是终点，而是另一段必须安然走完的旅程——连诸神也无法违逆命运。",
-      image: "/images/underworld.jpg",
+      image: "./images/underworld.jpg",
     },
   ],
 };
@@ -184,7 +184,7 @@ export interface ArchitectureConfig {
 
 export const architectureConfig: ArchitectureConfig = {
   sectionLabel: "神谕 · THE ORACLE",
-  videoPath: "/videos/olympus.mp4",
+  videoPath: "./videos/olympus.mp4",
   title: "云层之上，众神的宫殿仍在闪耀",
   description:
     "德尔斐神庙的门楣上刻着两句箴言：认识你自己，凡事勿过度。女祭司皮提亚在月桂与蒸汽中传达阿波罗的神谕，城邦的兴废、战争的抉择都曾系于一言。希腊人相信，神从不直接给出答案——他们只在你望向内心的瞬间低语。正如这片云海之上的宫殿：它既在远方，也在每个仰望者的头顶。",
@@ -210,18 +210,18 @@ export interface ResearchConfig {
 export const researchConfig: ResearchConfig = {
   sectionLabel: "十二主神 · THE TWELVE OLYMPIANS",
   projects: [
-    { title: "宙斯 · Zeus", year: "JUPITER", discipline: "天空与雷霆 · 众神之王", image: "/images/gods/zeus.jpg", godId: "zeus" },
-    { title: "赫拉 · Hera", year: "JUNO", discipline: "婚姻与家庭 · 天后", image: "/images/gods/hera.jpg", godId: "hera" },
-    { title: "波塞冬 · Poseidon", year: "NEPTUNE", discipline: "海洋与地震 · 三叉戟", image: "/images/gods/poseidon.jpg", godId: "poseidon" },
-    { title: "雅典娜 · Athena", year: "MINERVA", discipline: "智慧与战争 · 猫头鹰", image: "/images/gods/athena.jpg", godId: "athena" },
-    { title: "阿波罗 · Apollo", year: "APOLLO", discipline: "光明·音乐·预言", image: "/images/gods/apollo.jpg", godId: "apollo" },
-    { title: "阿尔忒弥斯 · Artemis", year: "DIANA", discipline: "狩猎与月亮 · 银弓", image: "/images/gods/artemis.jpg", godId: "artemis" },
-    { title: "阿瑞斯 · Ares", year: "MARS", discipline: "战争与勇气", image: "/images/gods/ares.jpg", godId: "ares" },
-    { title: "阿佛洛狄忒 · Aphrodite", year: "VENUS", discipline: "爱与美 · 诞生于海沫", image: "/images/gods/aphrodite.jpg", godId: "aphrodite" },
-    { title: "赫菲斯托斯 · Hephaestus", year: "VULCAN", discipline: "火焰与锻造 · 工匠之神", image: "/images/gods/hephaestus.jpg", godId: "hephaestus" },
-    { title: "赫尔墨斯 · Hermes", year: "MERCURY", discipline: "信使·商业·旅人", image: "/images/gods/hermes.jpg", godId: "hermes" },
-    { title: "得墨忒耳 · Demeter", year: "CERES", discipline: "农业与丰收", image: "/images/gods/demeter.jpg", godId: "demeter" },
-    { title: "狄俄尼索斯 · Dionysus", year: "BACCHUS", discipline: "葡萄酒·狂欢·戏剧", image: "/images/gods/dionysus.jpg", godId: "dionysus" },
+    { title: "宙斯 · Zeus", year: "JUPITER", discipline: "天空与雷霆 · 众神之王", image: "./images/gods/zeus.jpg", godId: "zeus" },
+    { title: "赫拉 · Hera", year: "JUNO", discipline: "婚姻与家庭 · 天后", image: "./images/gods/hera.jpg", godId: "hera" },
+    { title: "波塞冬 · Poseidon", year: "NEPTUNE", discipline: "海洋与地震 · 三叉戟", image: "./images/gods/poseidon.jpg", godId: "poseidon" },
+    { title: "雅典娜 · Athena", year: "MINERVA", discipline: "智慧与战争 · 猫头鹰", image: "./images/gods/athena.jpg", godId: "athena" },
+    { title: "阿波罗 · Apollo", year: "APOLLO", discipline: "光明·音乐·预言", image: "./images/gods/apollo.jpg", godId: "apollo" },
+    { title: "阿尔忒弥斯 · Artemis", year: "DIANA", discipline: "狩猎与月亮 · 银弓", image: "./images/gods/artemis.jpg", godId: "artemis" },
+    { title: "阿瑞斯 · Ares", year: "MARS", discipline: "战争与勇气", image: "./images/gods/ares.jpg", godId: "ares" },
+    { title: "阿佛洛狄忒 · Aphrodite", year: "VENUS", discipline: "爱与美 · 诞生于海沫", image: "./images/gods/aphrodite.jpg", godId: "aphrodite" },
+    { title: "赫菲斯托斯 · Hephaestus", year: "VULCAN", discipline: "火焰与锻造 · 工匠之神", image: "./images/gods/hephaestus.jpg", godId: "hephaestus" },
+    { title: "赫尔墨斯 · Hermes", year: "MERCURY", discipline: "信使·商业·旅人", image: "./images/gods/hermes.jpg", godId: "hermes" },
+    { title: "得墨忒耳 · Demeter", year: "CERES", discipline: "农业与丰收", image: "./images/gods/demeter.jpg", godId: "demeter" },
+    { title: "狄俄尼索斯 · Dionysus", year: "BACCHUS", discipline: "葡萄酒·狂欢·戏剧", image: "./images/gods/dionysus.jpg", godId: "dionysus" },
   ],
 };
 
@@ -265,7 +265,7 @@ export const footerConfig: FooterConfig = {
       ],
     },
   ],
-  copyright: "© 2026 奥林匹斯·神话志 — 献给所有仰望星空的人 · 由 Kimi Agent 生成",
+  copyright: "© 2026 奥林匹斯·神话志 — 献给所有仰望星空的人",
   bottomLinks: [
     { label: "GitHub 源码", href: "https://github.com/MinibeanAI/greek-mythology-olympus" },
   ],

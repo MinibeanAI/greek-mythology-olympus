@@ -2,10 +2,12 @@ import { useRef, useEffect, useState } from 'react';
 import AmberCascades from './AmberCascades';
 import LiquidGlassButton from '../components/LiquidGlassButton';
 import { heroConfig } from '../config';
+import { useIsMobile } from '../hooks/use-mobile';
 
 export default function Hero() {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const [titleWidth, setTitleWidth] = useState<number>(0);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const measure = () => {
@@ -31,7 +33,9 @@ export default function Hero() {
         className="relative z-10 flex flex-col justify-between pointer-events-none"
         style={{
           height: '100%',
-          padding: '28vh 5vw 8vh',
+          padding: isMobile
+            ? '14vh 5vw 6vh'
+            : 'clamp(16vh, 22vw, 28vh) 5vw clamp(5vh, 6vw, 8vh)',
         }}
       >
         <div>
@@ -41,9 +45,9 @@ export default function Hero() {
             style={{
               fontFamily: "'GeistMono', monospace",
               fontWeight: 400,
-              fontSize: 'clamp(48px, 6vw, 96px)',
+              fontSize: isMobile ? 'clamp(32px, 9vw, 48px)' : 'clamp(36px, 6vw, 96px)',
               lineHeight: 1.0,
-              letterSpacing: '-3px',
+              letterSpacing: isMobile ? '-1px' : 'clamp(-1px, -0.3vw, -3px)',
               textShadow: '0 4px 24px rgba(0,0,0,0.8)',
               marginBottom: 'clamp(32px, 4vw, 56px)',
               width: 'fit-content',
@@ -56,14 +60,14 @@ export default function Hero() {
               style={{
                 fontFamily: "'GeistMono', monospace",
                 fontWeight: 200,
-                fontSize: 'clamp(15px, 1.5vw, 22px)',
-                lineHeight: 1.7,
-                letterSpacing: '-0.3px',
-                color: '#ffffff',
-                margin: '0 0 12px 0',
-                width: titleWidth || 'auto',
-                maxWidth: '100%',
-                textShadow: '0 2px 12px rgba(0,0,0,0.6)',
+              fontSize: isMobile ? 14 : 'clamp(15px, 1.5vw, 22px)',
+              lineHeight: 1.7,
+              letterSpacing: '-0.3px',
+              color: '#ffffff',
+              margin: '0 0 12px 0',
+              width: isMobile ? '100%' : (titleWidth || 'auto'),
+              maxWidth: '100%',
+              textShadow: '0 2px 12px rgba(0,0,0,0.6)',
               }}
             >
               {heroConfig.subtitleLine1}
@@ -74,14 +78,14 @@ export default function Hero() {
               style={{
                 fontFamily: "'GeistMono', monospace",
                 fontWeight: 200,
-                fontSize: 'clamp(15px, 1.5vw, 22px)',
-                lineHeight: 1.7,
-                letterSpacing: '-0.3px',
-                color: '#ffffff',
-                margin: 0,
-                width: titleWidth || 'auto',
-                maxWidth: '100%',
-                textShadow: '0 2px 12px rgba(0,0,0,0.6)',
+              fontSize: isMobile ? 14 : 'clamp(15px, 1.5vw, 22px)',
+              lineHeight: 1.7,
+              letterSpacing: '-0.3px',
+              color: '#ffffff',
+              margin: 0,
+              width: isMobile ? '100%' : (titleWidth || 'auto'),
+              maxWidth: '100%',
+              textShadow: '0 2px 12px rgba(0,0,0,0.6)',
               }}
             >
               {heroConfig.subtitleLine2}

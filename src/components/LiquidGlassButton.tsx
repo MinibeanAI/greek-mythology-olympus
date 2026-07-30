@@ -110,7 +110,7 @@ export default function LiquidGlassButton({ children, onClick, className = '' }:
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '16px 40px',
+          padding: 'clamp(12px, 4vw, 16px) clamp(24px, 8vw, 40px)',
           borderRadius: 999,
           border: '1px solid rgba(255, 255, 255, 0.12)',
           background: 'transparent',

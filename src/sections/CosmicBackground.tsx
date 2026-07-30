@@ -16,7 +16,7 @@ function makeStars(count: number, seed: number) {
 }
 
 export default function CosmicBackground() {
-  const stars = useMemo(() => makeStars(140, 7), []);
+  const stars = useMemo(() => makeStars(typeof window !== 'undefined' && window.innerWidth < 768 ? 70 : 140, 7), []);
 
   return (
     <div

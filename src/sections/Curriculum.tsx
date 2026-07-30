@@ -2,12 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { capabilitiesConfig } from '../config';
+import { useIsMobile } from '../hooks/use-mobile';
 
 export default function Curriculum() {
   const navigate = useNavigate();
   const sectionRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const items = itemRefs.current.filter(Boolean) as HTMLDivElement[];
@@ -53,7 +55,7 @@ export default function Curriculum() {
       ref={sectionRef}
       className="relative"
       style={{
-        padding: '150px 5vw',
+        padding: 'clamp(60px, 12vw, 150px) 5vw',
         minHeight: '100vh',
         background: 'transparent',
       }}
@@ -63,7 +65,7 @@ export default function Curriculum() {
           <div
             className="mb-6"
             style={{
-              fontFamily: "'Inter', sans-serif",
+              fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif",
               fontSize: 12,
               fontWeight: 300,
               letterSpacing: '3px',
@@ -84,25 +86,25 @@ export default function Curriculum() {
           }}
         />
 
-        <div className="flex flex-col" style={{ gap: 100 }}>
+        <div className="flex flex-col" style={{ gap: isMobile ? '32px' : 'clamp(40px, 8vw, 100px)' }}>
           {capabilitiesConfig.items.map((discipline, i) => (
             <div
               key={discipline.title}
               ref={(el) => { itemRefs.current[i] = el; }}
               className="flex flex-col md:flex-row md:items-start"
-              style={{ gap: '40px', cursor: 'pointer' }}
+              style={{ gap: isMobile ? '16px' : '40px', cursor: 'pointer' }}
               onClick={() => navigate(`/capability/${discipline.slug}`)}
               onMouseEnter={() => setHoveredIndex(i)}
               onMouseLeave={() => setHoveredIndex(null)}
             >
-              <div style={{ flex: '0 0 70%' }}>
+              <div style={{ flex: isMobile ? '1 1 100%' : '0 0 70%' }}>
                 <h3
                   style={{
-                    fontFamily: "'EB Garamond', serif",
+                    fontFamily: "Georgia, 'Times New Roman', serif",
                     fontWeight: 400,
-                    fontSize: 'clamp(40px, 5.4vw, 86.4px)',
+                    fontSize: isMobile ? 'clamp(28px, 7vw, 40px)' : 'clamp(40px, 5.4vw, 86.4px)',
                     lineHeight: 1.05,
-                    letterSpacing: '-1.44px',
+                    letterSpacing: isMobile ? '-0.5px' : '-1.44px',
                     color: hoveredIndex === i ? 'rgba(178, 158, 255, 1)' : '#ffffff',
                     margin: 0,
                     textWrap: 'balance',
@@ -113,46 +115,52 @@ export default function Curriculum() {
                 </h3>
               </div>
               <div
-                className="flex items-start"
+                className={isMobile ? 'flex flex-col' : 'flex items-start'}
                 style={{
-                  flex: '1 1 30%',
+                  flex: isMobile ? '1 1 100%' : '1 1 30%',
+                  minWidth: 0,
                   paddingTop: 'clamp(4px, 1vw, 16px)',
                   position: 'relative',
                   overflow: 'hidden',
-                  minHeight: hoveredIndex === i ? 200 : 'auto',
+                  minHeight: !isMobile && hoveredIndex === i ? 200 : 'auto',
                   transition: 'min-height 0.4s ease',
                 }}
               >
-                {/* Description text — fades out on hover */}
+                {/* Description text — fades out on hover (desktop only) */}
                 <p
                   style={{
-                    fontFamily: "'Inter', sans-serif",
+                    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif",
                     fontWeight: 200,
-                    fontSize: 15,
+                    fontSize: isMobile ? 13 : 15,
                     lineHeight: 1.8,
                     color: '#dadada',
                     margin: 0,
+                    width: '100%',
+                    maxWidth: '100%',
                     textWrap: 'pretty',
-                    opacity: hoveredIndex === i ? 0 : 1,
+                    opacity: !isMobile && hoveredIndex === i ? 0 : 1,
                     transition: 'opacity 0.35s ease',
                   }}
                 >
                   {discipline.description}
                 </p>
 
-                {/* Image — fades in on hover */}
+                {/* Image — fades in on hover (desktop) / always visible (mobile) */}
                 {discipline.image && (
                   <img
                     src={discipline.image}
                     alt={discipline.title}
                     style={{
-                      position: 'absolute',
-                      inset: 0,
+                      position: isMobile ? 'relative' : 'absolute',
+                      inset: isMobile ? 'auto' : 0,
                       width: '100%',
-                      height: '100%',
+                      height: isMobile ? 'auto' : '100%',
+                      marginTop: isMobile ? 16 : 0,
+                      borderRadius: isMobile ? 8 : 0,
+                      aspectRatio: isMobile ? '16/9' : 'auto',
                       objectFit: 'cover',
-                      opacity: hoveredIndex === i ? 1 : 0,
-                      transform: hoveredIndex === i ? 'scale(1)' : 'scale(1.05)',
+                      opacity: isMobile ? 1 : (hoveredIndex === i ? 1 : 0),
+                      transform: isMobile ? 'none' : (hoveredIndex === i ? 'scale(1)' : 'scale(1.05)'),
                       transition: 'opacity 0.45s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
                       filter: 'grayscale(30%)',
                     }}

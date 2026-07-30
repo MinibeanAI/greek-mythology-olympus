@@ -6,13 +6,14 @@ function initAmberCascades(canvas: HTMLCanvasElement) {
   let height = 0;
   let dpr = 1;
   let animationFrameId = 0;
+  const isMobile = window.innerWidth < 768;
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const FALL_SPEED = 1.0;
-  const COLUMN_DENSITY = 0.7;
-  const FONT_SIZE = Math.max(14, Math.round(16));
-  const WAVE_RESOLUTION = 4;
-  const MAX_RIPPLES = 40;
+  const COLUMN_DENSITY = isMobile ? 0.45 : 0.7;
+  const FONT_SIZE = isMobile ? 13 : Math.max(14, Math.round(16));
+  const WAVE_RESOLUTION = isMobile ? 6 : 4;
+  const MAX_RIPPLES = isMobile ? 20 : 40;
 
   const mathSymbols = '\u00D7\u00F7\u2206\u03A3\u03A0\u221A\u221E\u2248\u2260\u2264\u2265\u222B\u2202\u03B1\u03B2\u03B3\u03B8\u03C6\u03C8\u03C9';
   const numbers = '0123456789';
@@ -127,7 +128,7 @@ function initAmberCascades(canvas: HTMLCanvasElement) {
   }
 
   function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2);
     width = window.innerWidth;
     height = window.innerHeight;
     canvas.width = Math.round(width * dpr);

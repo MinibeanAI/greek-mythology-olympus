@@ -555,6 +555,30 @@ export default function PantheonGraph() {
   }, [active]);
 
   const activeGod = active ? NODE_MAP.get(active) ?? null : null;
+  // 桌面端面板避让：神在右半边 → 面板放左边；神在下半区 → 面板放上方（SVG viewBox 1000x680）
+  const panelOnLeft = !!activeGod && activeGod.x >= 500;
+  const panelOnTop = !!activeGod && activeGod.y >= 340;
+  const graphScrollRef = useRef<HTMLDivElement>(null);
+
+  // 移动端：选中神后把节点滚动到可见区域上部，避免被底部卡片遮挡
+  useEffect(() => {
+    if (!isMobile || !selected) return;
+    const god = NODE_MAP.get(selected);
+    const scroller = graphScrollRef.current;
+    const svg = scroller?.querySelector('svg');
+    if (!god || !scroller || !svg) return;
+    // 横向：把节点滚到容器水平居中（SVG 固定宽 1000px，viewBox 同宽）
+    const targetLeft = god.x - scroller.clientWidth / 2;
+    scroller.scrollTo({ left: Math.max(0, targetLeft), behavior: 'smooth' });
+    // 纵向：卡片占底部 42vh，把节点滚到剩余可视区（上方 58vh）的中间
+    const rect = svg.getBoundingClientRect();
+    const nodeY = rect.top + (god.y / 680) * rect.height;
+    const visibleH = window.innerHeight * 0.58;
+    const delta = nodeY - visibleH / 2;
+    if (Math.abs(delta) > 40) {
+      window.scrollBy({ top: delta, behavior: 'smooth' });
+    }
+  }, [isMobile, selected]);
   const activeStory = activeStoryId ? STORY_MAP.get(activeStoryId) ?? null : null;
   const childrenOf = (id: string) => GODS.filter((g) => g.parents?.includes(id));
   const siblingsOf = (id: string) => {
@@ -572,7 +596,7 @@ export default function PantheonGraph() {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          gsap.to(targets, { opacity: 1, y: 0, duration: 1, stagger: 0.12, ease: 'power3.out' });
+          gsap.to(targets, { opacity: 1, y: 0, duration: 1, stagger: 0.12, ease: 'power3.out', clearProps: 'transform' });
           observer.disconnect();
         }
       });
@@ -615,31 +639,35 @@ export default function PantheonGraph() {
     <section
       id="pantheon"
       ref={sectionRef}
-      style={{ padding: '150px 5vw', background: 'transparent', position: 'relative', zIndex: 2 }}
+      style={{ padding: 'clamp(60px, 12vw, 150px) 5vw', background: 'transparent', position: 'relative', zIndex: activeGod || activeStory ? 30 : 2 }}
     >
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
         <div
           data-reveal
           className="mb-6"
-          style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 300, letterSpacing: '3px', textTransform: 'uppercase', color: '#c8c8e0', opacity: 0.6 }}
+          style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif", fontSize: 12, fontWeight: 300, letterSpacing: '3px', textTransform: 'uppercase', color: '#c8c8e0', opacity: 0.6 }}
         >
           诸神星图 · THE FAMILY CONSTELLATION
         </div>
         <div data-reveal className="mb-10" style={{ width: '100%', height: 1, background: 'rgba(160, 150, 230, 0.14)' }} />
 
-        <div data-reveal className="flex flex-col lg:flex-row" style={{ gap: 40, marginBottom: 40 }}>
+        <div data-reveal className="flex flex-col lg:flex-row" style={{ gap: isMobile ? 16 : 40, marginBottom: 40 }}>
           <h2
             style={{
-              fontFamily: "'EB Garamond', serif", fontWeight: 400, fontSize: 'clamp(32px, 4vw, 60px)',
-              lineHeight: 1.15, letterSpacing: '-1px', color: '#ffffff', margin: 0, flex: '0 0 46%', textWrap: 'balance',
+              fontFamily: "Georgia, 'Times New Roman', serif", fontWeight: 400,
+              fontSize: isMobile ? 'clamp(24px, 6vw, 36px)' : 'clamp(32px, 4vw, 60px)',
+              lineHeight: 1.15,
+              letterSpacing: isMobile ? '-0.5px' : '-1px',
+              color: '#ffffff', margin: 0, flex: isMobile ? 'none' : '0 0 46%', textWrap: 'balance',
             }}
           >
             一张被点亮的神谱， 一段血脉交织的宇宙
           </h2>
           <p
             style={{
-              fontFamily: "'Inter', sans-serif", fontWeight: 200, fontSize: 16, lineHeight: 1.85,
-              color: '#c8c8e0', margin: 0, flex: '1 1 50%', textWrap: 'pretty',
+              fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif",
+              fontWeight: 200, fontSize: isMobile ? 14 : 16, lineHeight: 1.85,
+              color: '#c8c8e0', margin: 0, flex: isMobile ? 'none' : '1 1 50%', textWrap: 'pretty',
             }}
           >
             希腊神话不是孤立的传说，而是一张横跨三代的家族巨网。紫罗兰色的连线是血脉的传承，蔷薇色的虚线是爱与盟约，
@@ -653,6 +681,7 @@ export default function PantheonGraph() {
 
         <div
           data-reveal
+          ref={graphScrollRef}
           style={{
             position: 'relative', border: '1px solid rgba(150, 140, 230, 0.14)', borderRadius: 12,
             background: 'radial-gradient(ellipse at 50% 30%, rgba(30, 24, 62, 0.5), rgba(6, 6, 18, 0.92) 70%)',
@@ -666,7 +695,7 @@ export default function PantheonGraph() {
                 position: 'sticky', left: 0, top: 0, zIndex: 3, width: 'fit-content',
                 margin: '10px 0 0 14px', padding: '4px 12px', borderRadius: 999,
                 background: 'rgba(120, 110, 220, 0.16)', backdropFilter: 'blur(6px)',
-                fontFamily: "'Inter', sans-serif", fontSize: 11, color: 'rgba(200,190,255,0.9)',
+                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif", fontSize: 11, color: 'rgba(200,190,255,0.9)',
                 pointerEvents: 'none',
               }}
             >
@@ -677,8 +706,8 @@ export default function PantheonGraph() {
             viewBox="0 0 1000 680"
             style={{
               display: 'block', height: 'auto',
-              width: isMobile ? '880px' : '100%',
-              minWidth: isMobile ? '880px' : undefined,
+              width: isMobile ? '1000px' : '100%',
+              minWidth: isMobile ? '1000px' : undefined,
               maxWidth: 'none',
             }}
             role="img"
@@ -758,6 +787,8 @@ export default function PantheonGraph() {
                   onMouseEnter={() => setHoveredStoryId(p.story.id)}
                   onMouseLeave={() => setHoveredStoryId(null)}
                 >
+                  {/* 透明触摸放大区 */}
+                  <circle r={isMobile ? 22 : 14} fill="transparent" />
                   <circle r={isFocus ? 13 : 10} fill="url(#storyGlow)">
                     <animate attributeName="opacity" values="0.5;1;0.5" dur="2.6s" repeatCount="indefinite" />
                   </circle>
@@ -767,7 +798,7 @@ export default function PantheonGraph() {
                     <text
                       y={-16} textAnchor="middle"
                       style={{
-                        fontFamily: "'EB Garamond', serif", fontSize: 12.5,
+                        fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 12.5,
                         fill: 'rgba(200, 235, 255, 0.98)', pointerEvents: 'none',
                         paintOrder: 'stroke', stroke: 'rgba(5,5,16,0.9)', strokeWidth: 3,
                       }}
@@ -794,6 +825,8 @@ export default function PantheonGraph() {
                   onMouseEnter={() => setHovered(g.id)}
                   onMouseLeave={() => setHovered(null)}
                 >
+                  {/* 透明触摸放大区（移动端友好） */}
+                  <circle r={isMobile ? 24 : 16} fill="transparent" />
                   <defs>
                     <clipPath id={`clip-${g.id}`}>
                       <circle r={R} />
@@ -823,7 +856,7 @@ export default function PantheonGraph() {
                   <text
                     y={R + 19} textAnchor="middle"
                     style={{
-                      fontFamily: "'EB Garamond', serif", fontSize: 15,
+                      fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 15,
                       fill: isActive ? '#e6dcff' : '#d9d4ee', pointerEvents: 'none',
                       paintOrder: 'stroke', stroke: 'rgba(5,5,16,0.85)', strokeWidth: 3,
                     }}
@@ -833,7 +866,7 @@ export default function PantheonGraph() {
                   <text
                     y={R + 33} textAnchor="middle"
                     style={{
-                      fontFamily: "'Fira Code', monospace", fontSize: 8.5, letterSpacing: 1.5,
+                      fontFamily: "'SF Mono', Menlo, Consolas, monospace", fontSize: 8.5, letterSpacing: 1.5,
                       fill: 'rgba(165,150,230,0.75)', pointerEvents: 'none',
                       paintOrder: 'stroke', stroke: 'rgba(5,5,16,0.85)', strokeWidth: 2.5,
                     }}
@@ -853,7 +886,7 @@ export default function PantheonGraph() {
               left: 18, bottom: 14, gap: 22, width: 'fit-content',
               marginTop: isMobile ? -44 : undefined,
               paddingBottom: isMobile ? 14 : undefined,
-              fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#c8c8e0', opacity: 0.85,
+              fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif", fontSize: 12, color: '#c8c8e0', opacity: 0.85,
             }}
           >
             <span className="flex items-center" style={{ gap: 8 }}>
@@ -874,23 +907,31 @@ export default function PantheonGraph() {
             </span>
           </div>
 
-          {/* 神祇信息面板 */}
+          {/* 神祇信息面板：按选中神的位置停靠在对侧，避免遮挡节点本身 */}
           {activeGod && (
             <div
               ref={panelRef}
               style={{
                 position: isMobile ? 'fixed' : 'absolute',
-                top: isMobile ? 'auto' : 0,
-                bottom: 0,
-                right: 0,
-                height: isMobile ? 'auto' : '100%',
-                maxHeight: isMobile ? '72vh' : undefined,
-                zIndex: isMobile ? 50 : undefined,
-                width: isMobile ? '100%' : 'min(370px, 92%)',
-                background: 'rgba(10, 9, 24, 0.92)',
+                top: isMobile ? 'auto' : (panelOnTop ? 12 : 'auto'),
+                bottom: isMobile
+                  ? 'calc(var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)) + 8px)'
+                  : (panelOnTop ? 'auto' : 12),
+                right: isMobile ? 8 : (panelOnLeft ? 'auto' : 12),
+                left: isMobile ? 8 : (panelOnLeft ? 12 : 'auto'),
+                height: 'auto',
+                maxHeight: isMobile ? '42vh' : 'min(420px, calc(100% - 24px))',
+                zIndex: isMobile ? 50 : 5,
+                width: isMobile ? 'auto' : 'min(300px, 46%)',
+                background: 'rgba(10, 9, 24, 0.97)',
                 backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-                borderLeft: '1px solid rgba(200, 186, 255, 0.22)',
-                padding: '34px 30px', overflowY: 'auto',
+                border: '1px solid rgba(200, 186, 255, 0.22)',
+                borderRadius: 14,
+                padding: isMobile ? '16px 14px 18px' : '20px 20px 22px',
+                overflowY: 'auto',
+                WebkitOverflowScrolling: 'touch',
+                overscrollBehavior: 'contain',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
               }}
             >
               <button
@@ -904,23 +945,23 @@ export default function PantheonGraph() {
                 ×
               </button>
 
-              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'rgba(200,186,255,0.9)', marginBottom: 10 }}>
+              <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif", fontSize: 11, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'rgba(200,186,255,0.9)', marginBottom: 10 }}>
                 {activeGod.generation} · {activeGod.epithet}
               </div>
-              <div style={{ fontFamily: "'EB Garamond', serif", fontSize: 34, color: '#fff', lineHeight: 1.1, marginBottom: 4 }}>
+              <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: isMobile ? 24 : 34, color: '#fff', lineHeight: 1.1, marginBottom: 4 }} className={isMobile ? 'god-panel-name' : ''}>
                 {activeGod.name}
               </div>
-              <div style={{ fontFamily: "'Fira Code', monospace", fontSize: 11, letterSpacing: 2, color: 'rgba(165,150,230,0.85)', marginBottom: 18 }}>
+              <div style={{ fontFamily: "'SF Mono', Menlo, Consolas, monospace", fontSize: 11, letterSpacing: 2, color: 'rgba(165,150,230,0.85)', marginBottom: 18 }}>
                 {activeGod.latin}
               </div>
-              <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, fontSize: 14, lineHeight: 1.9, color: '#c8c8e0', margin: '0 0 22px 0' }}>
+              <p style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif", fontWeight: 200, fontSize: isMobile ? 13 : 14, lineHeight: isMobile ? 1.85 : 1.9, color: '#c8c8e0', margin: '0 0 22px 0' }} className={isMobile ? 'god-panel-desc' : ''}>
                 {activeGod.desc}
               </p>
 
               {/* 相关故事 */}
               {storiesOf(activeGod.id).length > 0 && (
                 <div style={{ marginBottom: 18 }}>
-                  <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(150,222,255,0.85)', marginBottom: 8 }}>
+                  <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif", fontSize: 11, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(150,222,255,0.85)', marginBottom: 8 }}>
                     ✦ 相关故事
                   </div>
                   <div className="flex flex-col" style={{ gap: 7 }}>
@@ -932,7 +973,7 @@ export default function PantheonGraph() {
                           textAlign: 'left', background: 'rgba(110, 170, 255, 0.07)',
                           border: '1px solid rgba(120, 180, 255, 0.25)', borderRadius: 8,
                           padding: '8px 14px', cursor: 'pointer',
-                          fontFamily: "'EB Garamond', serif", fontSize: 15, color: '#bfe4ff',
+                          fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 15, color: '#bfe4ff',
                           transition: 'background 0.25s ease',
                           display: 'flex', alignItems: 'center', gap: 8,
                         }}
@@ -941,10 +982,10 @@ export default function PantheonGraph() {
                       >
                         <span style={{ color: STORY_DOT, fontSize: 10 }}>✦</span>
                         {s.title}
-                        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 10.5, color: 'rgba(150, 210, 255, 0.75)' }}>
+                        <span style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif", fontSize: 10.5, color: 'rgba(150, 210, 255, 0.75)' }}>
                           · {s.themes.join(' ')}
                         </span>
-                        <span style={{ marginLeft: 'auto', fontFamily: "'Inter', sans-serif", fontSize: 10.5, color: 'rgba(150,200,255,0.55)', whiteSpace: 'nowrap' }}>
+                        <span style={{ marginLeft: 'auto', fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif", fontSize: 10.5, color: 'rgba(150,200,255,0.55)', whiteSpace: 'nowrap' }}>
                           {s.era}
                         </span>
                       </button>
@@ -961,7 +1002,7 @@ export default function PantheonGraph() {
               ].map(({ label, ids }) =>
                 ids.length > 0 ? (
                   <div key={label} style={{ marginBottom: 16 }}>
-                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, letterSpacing: '2px', textTransform: 'uppercase', color: '#c8c8e0', opacity: 0.55, marginBottom: 8 }}>
+                    <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif", fontSize: 11, letterSpacing: '2px', textTransform: 'uppercase', color: '#c8c8e0', opacity: 0.55, marginBottom: 8 }}>
                       {label}
                     </div>
                     <div className="flex flex-wrap" style={{ gap: 8 }}>
@@ -974,7 +1015,7 @@ export default function PantheonGraph() {
                             style={{
                               background: 'rgba(200,186,255,0.08)', border: '1px solid rgba(200,186,255,0.3)',
                               borderRadius: 999, padding: '5px 14px', cursor: 'pointer',
-                              fontFamily: "'EB Garamond', serif", fontSize: 14, color: '#d8ccff',
+                              fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 14, color: '#d8ccff',
                               transition: 'background 0.25s ease',
                             }}
                             onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(200,186,255,0.22)'; }}
@@ -1001,20 +1042,22 @@ export default function PantheonGraph() {
             position: 'fixed', inset: 0, zIndex: 60,
             background: 'rgba(3, 3, 12, 0.72)',
             backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '5vh 5vw',
+            display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center',
+            padding: isMobile ? 0 : '5vh 5vw',
           }}
         >
           <div
             ref={modalRef}
             onClick={(e) => e.stopPropagation()}
             style={{
-              width: 'min(680px, 100%)', maxHeight: '86vh', overflowY: 'auto',
+              width: isMobile ? '100%' : 'min(680px, 100%)',
+              maxHeight: isMobile ? '92vh' : '86vh',
+              overflowY: 'auto',
               background: 'linear-gradient(160deg, rgba(24, 20, 52, 0.96), rgba(9, 9, 24, 0.98))',
-              border: '1px solid rgba(150, 200, 255, 0.22)',
-              borderRadius: 14,
+              border: isMobile ? 'none' : '1px solid rgba(150, 200, 255, 0.22)',
+              borderRadius: isMobile ? '14px 14px 0 0' : 14,
               boxShadow: '0 0 80px rgba(90, 80, 200, 0.25), 0 30px 60px rgba(0,0,0,0.5)',
-              padding: 'clamp(28px, 4vw, 48px)',
+              padding: isMobile ? '24px 16px 32px' : 'clamp(28px, 4vw, 48px)',
               position: 'relative',
             }}
           >
@@ -1029,26 +1072,26 @@ export default function PantheonGraph() {
               ×
             </button>
 
-            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'rgba(150,222,255,0.9)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif", fontSize: 11, letterSpacing: '2.5px', textTransform: 'uppercase', color: 'rgba(150,222,255,0.9)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 9 }}>✦</span> {activeStory.era} · 神话故事
             </div>
-            <h3 style={{ fontFamily: "'EB Garamond', serif", fontWeight: 400, fontSize: 'clamp(30px, 4vw, 42px)', color: '#ffffff', margin: '0 0 6px 0', lineHeight: 1.15 }}>
+            <h3 style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontWeight: 400, fontSize: isMobile ? 'clamp(24px, 5.5vw, 34px)' : 'clamp(30px, 4vw, 42px)', color: '#ffffff', margin: '0 0 6px 0', lineHeight: 1.15 }} className={isMobile ? 'story-modal-title' : ''}>
               {activeStory.title}
             </h3>
-            <div style={{ fontFamily: "'EB Garamond', serif", fontSize: 17, color: 'rgba(200,186,255,0.85)', marginBottom: 16, fontStyle: 'italic' }}>
+            <div style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: isMobile ? 14 : 17, color: 'rgba(200,186,255,0.85)', marginBottom: 16, fontStyle: 'italic' }} className={isMobile ? 'story-modal-subtitle' : ''}>
               {activeStory.subtitle}
             </div>
 
             {/* 故事主题 */}
             <div className="flex flex-wrap items-center" style={{ gap: 8, marginBottom: 26 }}>
-              <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 10.5, letterSpacing: '2px', color: 'rgba(150,200,255,0.6)', textTransform: 'uppercase' }}>
+              <span style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif", fontSize: 10.5, letterSpacing: '2px', color: 'rgba(150,200,255,0.6)', textTransform: 'uppercase' }}>
                 主题
               </span>
               {activeStory.themes.map((t) => (
                 <span
                   key={t}
                   style={{
-                    fontFamily: "'EB Garamond', serif", fontSize: 13.5, color: '#bfe4ff',
+                    fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 13.5, color: '#bfe4ff',
                     border: '1px solid rgba(150, 222, 255, 0.4)', borderRadius: 999,
                     padding: '3px 13px',
                     background: 'linear-gradient(120deg, rgba(110,170,255,0.16), rgba(150,120,255,0.10))',
@@ -1061,13 +1104,13 @@ export default function PantheonGraph() {
             </div>
 
             {activeStory.paragraphs.map((p, i) => (
-              <p key={i} style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, fontSize: 15, lineHeight: 2, color: '#d5d5ea', margin: '0 0 18px 0', textWrap: 'pretty' }}>
+              <p key={i} style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif", fontWeight: 200, fontSize: isMobile ? 13 : 15, lineHeight: isMobile ? 1.9 : 2, color: '#d5d5ea', margin: '0 0 18px 0', textWrap: 'pretty' }} className={isMobile ? 'story-modal-text' : ''}>
                 {p}
               </p>
             ))}
 
             <div style={{ borderTop: '1px solid rgba(150, 200, 255, 0.14)', paddingTop: 20, marginTop: 8 }}>
-              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, letterSpacing: '2px', textTransform: 'uppercase', color: '#c8c8e0', opacity: 0.55, marginBottom: 10 }}>
+              <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif", fontSize: 11, letterSpacing: '2px', textTransform: 'uppercase', color: '#c8c8e0', opacity: 0.55, marginBottom: 10 }}>
                 出场神祇 · 点击回到星图
               </div>
               <div className="flex flex-wrap" style={{ gap: 8 }}>
@@ -1081,7 +1124,7 @@ export default function PantheonGraph() {
                       style={{
                         background: 'rgba(200,186,255,0.08)', border: '1px solid rgba(200,186,255,0.3)',
                         borderRadius: 999, padding: '5px 14px', cursor: 'pointer',
-                        fontFamily: "'EB Garamond', serif", fontSize: 14, color: '#d8ccff',
+                        fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 14, color: '#d8ccff',
                         transition: 'background 0.25s ease',
                       }}
                       onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(200,186,255,0.22)'; }}

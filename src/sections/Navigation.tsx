@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { siteConfig, navigationConfig } from '../config';
+import { useIsMobile } from '../hooks/use-mobile';
 
 export default function Navigation() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -32,7 +34,7 @@ export default function Navigation() {
       <nav
         className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between transition-colors duration-500"
         style={{
-          height: 80,
+          height: 'clamp(56px, 11vw, 80px)',
           padding: '0 5vw',
           backgroundColor: scrolled ? 'rgba(8, 8, 22, 0.95)' : 'transparent',
           backdropFilter: scrolled ? 'blur(8px)' : 'none',
@@ -45,7 +47,7 @@ export default function Navigation() {
           className="text-white no-underline"
           style={{
             fontFamily: "'GeistMono', monospace",
-            fontSize: 18,
+            fontSize: isMobile ? 15 : 18,
             fontWeight: 400,
             letterSpacing: '-0.5px',
           }}
@@ -84,20 +86,20 @@ export default function Navigation() {
             aria-label="搜索神祇与故事"
             className="flex items-center"
             style={{
-              gap: 8, background: 'rgba(120, 110, 220, 0.12)',
+              gap: 6, background: 'rgba(120, 110, 220, 0.12)',
               border: '1px solid rgba(160, 150, 240, 0.3)', borderRadius: 999,
-              padding: '7px 16px', cursor: 'pointer',
-              fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#cfc9f2',
+              padding: isMobile ? '6px 10px' : '7px 16px', cursor: 'pointer',
+              fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif", fontSize: isMobile ? 12 : 13, color: '#cfc9f2',
               transition: 'background 0.3s ease',
             }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(120, 110, 220, 0.28)'; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(120, 110, 220, 0.12)'; }}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <svg width={isMobile ? 14 : 14} height={isMobile ? 14 : 14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <circle cx="11" cy="11" r="7" />
               <line x1="16.5" y1="16.5" x2="21" y2="21" />
             </svg>
-            <span className="hidden sm:inline">寻神</span>
+            <span className={isMobile ? 'hidden' : 'hidden sm:inline'}>寻神</span>
           </button>
 
           {/* 汉堡菜单按钮（仅移动端显示） */}
@@ -132,8 +134,9 @@ export default function Navigation() {
       {/* 移动端下拉菜单 */}
       {menuOpen && (
         <div
-          className="md:hidden fixed top-[80px] left-0 right-0 z-40"
+          className="md:hidden fixed left-0 right-0 z-40"
           style={{
+            top: 'clamp(56px, 11vw, 80px)',
             background: 'rgba(8, 8, 22, 0.97)',
             backdropFilter: 'blur(12px)',
             borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
@@ -150,7 +153,7 @@ export default function Navigation() {
               onClick={(e) => handleClick(e, link.href)}
               className="nav-link"
               style={{
-                fontFamily: "'Inter', sans-serif",
+                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif",
                 fontSize: 16,
                 fontWeight: 300,
                 letterSpacing: '0.5px',
@@ -167,7 +170,7 @@ export default function Navigation() {
               href="#footer"
               onClick={(e) => handleClick(e, '#footer')}
               style={{
-                fontFamily: "'Inter', sans-serif",
+                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif",
                 fontSize: 16,
                 fontWeight: 300,
                 letterSpacing: '0.5px',
