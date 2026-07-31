@@ -9,3 +9,5 @@ node_modules
 .claude/
 *.zip
 小红书规范校验报告.md
+project.config.json
+project.private.config.json

@@ -184,7 +184,7 @@ export interface ArchitectureConfig {
 
 export const architectureConfig: ArchitectureConfig = {
   sectionLabel: "神谕 · THE ORACLE",
-  videoPath: "./videos/olympus.mp4",
+  videoPath: "./videos/olympus.gif",
   title: "云层之上，众神的宫殿仍在闪耀",
   description:
     "德尔斐神庙的门楣上刻着两句箴言：认识你自己，凡事勿过度。女祭司皮提亚在月桂与蒸汽中传达阿波罗的神谕，城邦的兴废、战争的抉择都曾系于一言。希腊人相信，神从不直接给出答案——他们只在你望向内心的瞬间低语。正如这片云海之上的宫殿：它既在远方，也在每个仰望者的头顶。",

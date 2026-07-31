@@ -777,6 +777,8 @@ export default function PantheonGraph() {
             {STORY_PLACEMENTS.map((p) => {
               const state = storyDotLit(p.story);
               const isFocus = state === 'full';
+              const dotR = isMobile ? (isFocus ? 16 : 14) : (isFocus ? 13 : 10);
+              const hitR = isMobile ? 30 : 16;
               return (
                 <g
                   key={p.story.id}
@@ -788,15 +790,15 @@ export default function PantheonGraph() {
                   onMouseLeave={() => setHoveredStoryId(null)}
                 >
                   {/* 透明触摸放大区 */}
-                  <circle r={isMobile ? 22 : 14} fill="transparent" />
-                  <circle r={isFocus ? 13 : 10} fill="url(#storyGlow)">
+                  <circle r={hitR} fill="transparent" />
+                  <circle r={dotR} fill="url(#storyGlow)">
                     <animate attributeName="opacity" values="0.5;1;0.5" dur="2.6s" repeatCount="indefinite" />
                   </circle>
-                  <circle r={isFocus ? 3.6 : 2.8} fill={state === 'lit' || isFocus ? STORY_DOT : STORY_DOT_DIM} filter="url(#softBlur)" />
-                  <circle r={1.3} fill="#f0faff" />
+                  <circle r={dotR * 0.32} fill={state === 'lit' || isFocus ? STORY_DOT : STORY_DOT_DIM} filter="url(#softBlur)" />
+                  <circle r={dotR * 0.15} fill="#f0faff" />
                   {(isFocus || hoveredStoryId === p.story.id) && (
                     <text
-                      y={-16} textAnchor="middle"
+                      y={-dotR - 8} textAnchor="middle"
                       style={{
                         fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 12.5,
                         fill: 'rgba(200, 235, 255, 0.98)', pointerEvents: 'none',
@@ -883,7 +885,7 @@ export default function PantheonGraph() {
             className="flex flex-wrap items-center"
             style={{
               position: isMobile ? 'sticky' : 'absolute',
-              left: 18, bottom: 14, gap: 22, width: 'fit-content',
+              left: 18, bottom: 14, gap: isMobile ? 12 : 22, width: 'fit-content',
               marginTop: isMobile ? -44 : undefined,
               paddingBottom: isMobile ? 14 : undefined,
               fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif", fontSize: 12, color: '#c8c8e0', opacity: 0.85,
@@ -903,8 +905,20 @@ export default function PantheonGraph() {
             </span>
             <span className="flex items-center" style={{ gap: 8 }}>
               <svg width="12" height="12"><circle cx="6" cy="6" r="3" fill={STORY_DOT} /></svg>
-              故事印记（可点击）
+              故事印记
             </span>
+            {!isMobile && (
+              <button
+                onClick={() => setActiveStoryId(STORIES[0].id)}
+                style={{
+                  background: 'rgba(110, 170, 255, 0.1)', border: '1px solid rgba(150, 200, 255, 0.35)',
+                  borderRadius: 999, padding: '4px 14px', color: '#bfe4ff', cursor: 'pointer',
+                  fontFamily: "Georgia, 'Times New Roman', serif", fontSize: 12,
+                }}
+              >
+                ✦ 浏览全部 {STORIES.length} 则故事
+              </button>
+            )}
           </div>
 
           {/* 神祇信息面板：按选中神的位置停靠在对侧，避免遮挡节点本身 */}
@@ -1136,6 +1150,71 @@ export default function PantheonGraph() {
                 })}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 移动端：全部故事列表入口（不依赖星图点击） */}
+      {isMobile && (
+        <div
+          style={{
+            marginTop: 36,
+            padding: '20px 4px 4px',
+            borderTop: '1px solid rgba(160, 150, 230, 0.14)',
+          }}
+        >
+          <div
+            style={{
+              fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif",
+              fontSize: 11, fontWeight: 300, letterSpacing: '3px', textTransform: 'uppercase',
+              color: 'rgba(150,222,255,0.85)', opacity: 0.8, marginBottom: 14,
+              display: 'flex', alignItems: 'center', gap: 8,
+            }}
+          >
+            <span style={{ fontSize: 9, color: STORY_DOT }}>✦</span>
+            全部 {STORIES.length} 则故事 · TAP TO READ
+          </div>
+          <div
+            style={{
+              display: 'flex', flexDirection: 'column', gap: 10,
+            }}
+          >
+            {STORIES.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => openStory(s.id)}
+                style={{
+                  textAlign: 'left',
+                  background: 'linear-gradient(90deg, rgba(110, 170, 255, 0.07), rgba(150,120,255,0.05))',
+                  border: '1px solid rgba(150, 200, 255, 0.28)',
+                  borderRadius: 10,
+                  padding: '12px 16px',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s ease, transform 0.2s ease',
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  fontFamily: "Georgia, 'Times New Roman', serif",
+                }}
+                onTouchStart={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.7'; }}
+                onTouchEnd={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = '1'; }}
+              >
+                <span style={{ color: STORY_DOT, fontSize: 11, flex: '0 0 auto' }}>✦</span>
+                <span style={{ flex: '1 1 auto', minWidth: 0 }}>
+                  <div style={{ color: '#ffffff', fontSize: 15, lineHeight: 1.3, marginBottom: 2 }}>
+                    {s.title}
+                  </div>
+                  <div style={{
+                    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif",
+                    fontSize: 10.5, color: 'rgba(180,200,255,0.7)', letterSpacing: '0.5px',
+                  }}>
+                    {s.era} · {s.themes.join(' · ')}
+                  </div>
+                </span>
+                <span style={{
+                  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif",
+                  fontSize: 18, color: 'rgba(180,200,255,0.5)', flex: '0 0 auto',
+                }}>›</span>
+              </button>
+            ))}
           </div>
         </div>
       )}

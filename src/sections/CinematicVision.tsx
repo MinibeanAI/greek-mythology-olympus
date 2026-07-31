@@ -109,17 +109,12 @@ export default function CinematicVision() {
                 borderRadius: isMobile ? 10 : 0,
               }}
             >
-              <video
-                ref={videoRef}
+              <img
                 src={architectureConfig.videoPath}
-                poster="./images/olympus-wide.jpg"
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
+                alt={architectureConfig.title || '奥林匹斯山全景'}
                 className="w-full h-full object-cover"
                 style={{ display: 'block' }}
+                loading="lazy"
               />
             </div>
           )}
